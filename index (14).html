@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECHFEST 2025 · IIT Bombay</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --c:#00f0ff;--r:#ff2050;--g:#00ff88;--gold:#ffbe00;
+  --bg:#02060a;--text:#7ab8c4;--bright:#e0f4f8;
+  --font-d:'Bebas Neue',sans-serif;
+  --font-b:'Space Grotesk',sans-serif;
+  --font-m:'Share Tech Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur{position:fixed;width:16px;height:16px;border:1.5px solid var(--c);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,background .2s;mix-blend-mode:screen}
+#dot{position:fixed;width:3px;height:3px;background:var(--c);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+body.hov #cur{width:36px;height:36px;background:rgba(0,240,255,.07)}
+
+/* CANVAS */
+#bg{position:fixed;inset:0;z-index:0}
+
+/* SCANLINES */
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px)}
+
+/* CONTENT LAYER */
+#content{position:relative;z-index:10}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:.9rem 3rem;background:rgba(2,6,10,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,240,255,.08);transition:background .3s}
+.logo{font-family:var(--font-d);font-size:1.4rem;letter-spacing:.2em;color:var(--c);text-decoration:none}
+.logo span{color:var(--r)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-family:var(--font-m);font-size:.6rem;letter-spacing:.2em;color:var(--text);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--c)}
+.nav-pill{font-family:var(--font-m);font-size:.58rem;letter-spacing:.15em;padding:.35rem .9rem;border:1px solid rgba(0,240,255,.25);color:var(--c);text-transform:uppercase;background:rgba(0,240,255,.04);cursor:none;transition:all .2s}
+.nav-pill:hover{background:rgba(0,240,255,.12)}
+
+/* HERO */
+.hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3rem 5rem;position:relative}
+.hero-eyebrow{font-family:var(--font-m);font-size:.6rem;letter-spacing:.4em;color:rgba(0,240,255,.5);text-transform:uppercase;margin-bottom:1rem}
+.hero-title{font-family:var(--font-d);font-size:clamp(5rem,14vw,13rem);line-height:.88;color:var(--bright);letter-spacing:.01em;position:relative}
+.hero-title .line-stroke{-webkit-text-stroke:1.5px var(--c);color:transparent}
+.hero-title .line-red{color:var(--r)}
+.hero-sub{margin-top:1.5rem;font-size:1rem;font-weight:300;color:var(--text);max-width:480px;line-height:1.7}
+.hero-cta{display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap}
+.btn{font-family:var(--font-m);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;padding:.9rem 2.2rem;cursor:none;text-decoration:none;display:inline-block;transition:all .2s;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.btn-c{background:var(--c);color:#020a0c;font-weight:700}
+.btn-c:hover{background:#fff;transform:translateY(-2px)}
+.btn-o{border:1px solid rgba(0,240,255,.3);color:var(--c)}
+.btn-o:hover{background:rgba(0,240,255,.08);transform:translateY(-2px)}
+
+/* SCROLL INDICATOR */
+.scroll-ind{position:absolute;right:3rem;bottom:4rem;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.scroll-line{width:1px;height:60px;background:linear-gradient(180deg,transparent,var(--c));animation:scrollDrop 2s ease-in-out infinite}
+.scroll-txt{font-family:var(--font-m);font-size:.5rem;letter-spacing:.3em;color:rgba(0,240,255,.4);text-transform:uppercase;writing-mode:vertical-lr}
+@keyframes scrollDrop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* TICKER */
+.ticker-wrap{overflow:hidden;border-top:1px solid rgba(0,240,255,.08);border-bottom:1px solid rgba(0,240,255,.08);background:rgba(2,6,10,.9);padding:.55rem 0;position:sticky;top:62px;z-index:100}
+.ticker{display:flex;gap:3rem;white-space:nowrap;animation:tick 35s linear infinite;font-family:var(--font-m);font-size:.6rem;letter-spacing:.15em;color:rgba(0,240,255,.3);text-transform:uppercase}
+.ticker b{color:var(--c);margin:0 .3rem}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* SECTIONS */
+.section{padding:8rem 3rem;position:relative}
+.section.dark{background:rgba(4,10,14,.7)}
+
+.s-head{margin-bottom:4rem}
+.s-num{font-family:var(--font-m);font-size:.55rem;letter-spacing:.35em;color:rgba(0,240,255,.3);text-transform:uppercase;margin-bottom:.6rem}
+.s-title{font-family:var(--font-d);font-size:clamp(2.5rem,6vw,5rem);color:var(--bright);letter-spacing:.03em;line-height:.95}
+.s-title .ac{color:var(--c)}
+.s-title .ar{color:var(--r)}
+.s-line{width:60px;height:2px;background:linear-gradient(90deg,var(--c),transparent);margin-top:1.2rem}
+
+/* ABOUT GRID */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,240,255,.08);margin-top:3rem}
+.a-stat{background:var(--bg);padding:1.75rem 1.5rem}
+.a-num{font-family:var(--font-d);font-size:3rem;color:var(--c);line-height:1}
+.a-lbl{font-family:var(--font-m);font-size:.55rem;letter-spacing:.2em;color:var(--text);text-transform:uppercase;margin-top:.3rem}
+.about-text p{font-size:1rem;font-weight:300;line-height:1.85;color:var(--text);margin-bottom:1.25rem}
+.about-text p strong{color:var(--bright);font-weight:600}
+
+/* 3D STAGE */
+.stage-wrap{position:relative;height:500px;margin:0 -3rem;overflow:hidden;cursor:none}
+#stage-canvas{display:block;width:100%;height:100%}
+.stage-label{position:absolute;bottom:2rem;left:3rem;font-family:var(--font-m);font-size:.55rem;letter-spacing:.25em;color:rgba(0,240,255,.4);text-transform:uppercase}
+.stage-label span{color:var(--c)}
+.drag-hint{position:absolute;top:50%;right:3rem;transform:translateY(-50%);font-family:var(--font-m);font-size:.55rem;letter-spacing:.2em;color:rgba(0,240,255,.3);text-transform:uppercase;writing-mode:vertical-lr;animation:fadeInOut 3s ease-in-out infinite}
+@keyframes fadeInOut{0%,100%{opacity:.3}50%{opacity:.7}}
+
+/* EVENTS */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:rgba(0,240,255,.06)}
+.ev{background:var(--bg);padding:2.25rem 2rem;position:relative;overflow:hidden;cursor:none;transition:background .3s}
+.ev::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s}
+.ev:hover{background:#060e14}
+.ev:hover::before{background:linear-gradient(90deg,var(--c),transparent)}
+.ev-idx{position:absolute;top:1.25rem;right:1.25rem;font-family:var(--font-m);font-size:.5rem;letter-spacing:.15em;color:rgba(0,240,255,.18)}
+.ev-icon{font-size:1.5rem;margin-bottom:1rem;filter:drop-shadow(0 0 8px currentColor)}
+.ev-tag{font-family:var(--font-m);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;padding:.2rem .6rem;margin-bottom:.9rem;display:inline-block;border:1px solid;border-radius:0}
+.tag-c{color:var(--c);border-color:rgba(0,240,255,.25);background:rgba(0,240,255,.04)}
+.tag-r{color:var(--r);border-color:rgba(255,32,80,.25);background:rgba(255,32,80,.04)}
+.tag-g{color:var(--g);border-color:rgba(0,255,136,.25);background:rgba(0,255,136,.04)}
+.tag-gold{color:var(--gold);border-color:rgba(255,190,0,.25);background:rgba(255,190,0,.04)}
+.ev-name{font-family:var(--font-d);font-size:1.3rem;color:var(--bright);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
+.ev-desc{font-size:.85rem;font-weight:300;line-height:1.7;color:var(--text);margin-bottom:1.25rem}
+.ev-foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-m);font-size:.55rem;letter-spacing:.1em;color:rgba(0,240,255,.35);text-transform:uppercase}
+.ev-prize{color:var(--gold);font-weight:700;font-size:.62rem}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:4rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(0,240,255,.3) 10%,rgba(0,240,255,.3) 90%,transparent)}
+.tl-item{position:relative;padding-bottom:3.5rem;opacity:0;transform:translateX(-20px);transition:opacity .7s,transform .7s}
+.tl-item.vis{opacity:1;transform:none}
+.tl-dot{position:absolute;left:-4.45rem;top:.3rem;width:10px;height:10px;border:1px solid var(--c);background:var(--bg);transform:rotate(45deg)}
+.tl-dot.on{background:var(--c)}
+.tl-conn{position:absolute;left:-4rem;top:.75rem;width:3rem;height:1px;background:rgba(0,240,255,.2)}
+.tl-phase{font-family:var(--font-m);font-size:.55rem;letter-spacing:.3em;color:var(--c);text-transform:uppercase;margin-bottom:.4rem}
+.tl-title{font-family:var(--font-d);font-size:1.6rem;color:var(--bright);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem}
+.tl-desc{font-size:.9rem;font-weight:300;line-height:1.75;color:var(--text);max-width:580px}
+
+/* REGISTER */
+.reg-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start}
+.reg-left h2{font-family:var(--font-d);font-size:clamp(2rem,5vw,4rem);color:var(--bright);line-height:.95;margin-bottom:1.5rem}
+.reg-left h2 span{color:var(--c)}
+.reg-left p{font-size:.95rem;font-weight:300;line-height:1.8;color:var(--text);margin-bottom:2rem}
+.form{display:flex;flex-direction:column;gap:1.1rem}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.f-group{display:flex;flex-direction:column;gap:.35rem}
+.f-label{font-family:var(--font-m);font-size:.52rem;letter-spacing:.25em;color:var(--text);text-transform:uppercase}
+.f-input,.f-select{background:rgba(0,240,255,.03);border:1px solid rgba(0,240,255,.12);padding:.75rem 1rem;color:var(--bright);font-family:var(--font-m);font-size:.68rem;letter-spacing:.08em;outline:none;transition:border-color .2s;width:100%}
+.f-input:focus,.f-select:focus{border-color:rgba(0,240,255,.4)}
+.f-input::placeholder{color:rgba(0,240,255,.18)}
+.f-select{appearance:none;cursor:none}
+.f-select option{background:#060e14}
+.submit{font-family:var(--font-m);font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;padding:1rem;background:var(--c);color:#020a0c;border:none;cursor:none;font-weight:700;transition:all .2s;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);margin-top:.5rem}
+.submit:hover{background:#fff;transform:translateY(-2px)}
+.success{display:none;text-align:center;padding:3rem;border:1px solid rgba(0,255,136,.2);background:rgba(0,255,136,.03)}
+.success .si{font-family:var(--font-d);font-size:3.5rem;color:var(--g);margin-bottom:.75rem}
+.success h3{font-family:var(--font-d);font-size:1.4rem;color:var(--bright);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem}
+.success p{font-family:var(--font-m);font-size:.6rem;color:var(--text);letter-spacing:.1em}
+.info-blocks{display:flex;flex-direction:column;gap:1px;background:rgba(0,240,255,.06)}
+.info-b{background:var(--bg);padding:1.5rem}
+.info-b-title{font-family:var(--font-m);font-size:.55rem;letter-spacing:.25em;color:var(--c);text-transform:uppercase;margin-bottom:1rem}
+.info-b ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.info-b li{display:flex;justify-content:space-between;font-family:var(--font-m);font-size:.62rem;letter-spacing:.08em;color:var(--text);padding:.45rem .75rem;border-left:1px solid rgba(0,240,255,.1)}
+.info-b li .v{color:var(--c)}
+.info-b li .vg{color:var(--gold)}
+
+/* FOOTER */
+footer{padding:3rem;border-top:1px solid rgba(0,240,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.f-logo{font-family:var(--font-d);font-size:1rem;letter-spacing:.2em;color:var(--c)}
+.f-logo span{color:var(--r)}
+.f-copy{font-family:var(--font-m);font-size:.52rem;letter-spacing:.15em;color:rgba(122,184,196,.3);text-transform:uppercase}
+.f-links{display:flex;gap:1.5rem;list-style:none}
+.f-links a{font-family:var(--font-m);font-size:.52rem;letter-spacing:.12em;color:rgba(122,184,196,.3);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.f-links a:hover{color:var(--c)}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s}
+.rev.vis{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:.8rem 1.25rem}
+  .nav-links{display:none}
+  .hero{padding:0 1.25rem 4rem}
+  .section{padding:5rem 1.25rem}
+  .about-grid{grid-template-columns:1fr}
+  .reg-wrap{grid-template-columns:1fr}
+  .f-row{grid-template-columns:1fr}
+  .stage-wrap{height:320px}
+  footer{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="dot"></div>
+<canvas id="bg"></canvas>
+<div class="scan"></div>
+
+<div id="content">
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">TECH<span>FEST</span> · IITB</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#register">Register</a></li>
+  </ul>
+  <button class="nav-pill" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Get Access →</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-eyebrow">IIT Bombay · Asia's Largest Science & Technology Festival</div>
+  <h1 class="hero-title" id="hero-title">
+    <span class="line-1" id="hl1">TECH</span><br>
+    <span class="line-stroke" id="hl2">FEST</span><br>
+    <span class="line-red" id="hl3">2025</span>
+  </h1>
+  <p class="hero-sub" id="hero-sub">Three days. 180+ events. 180,000 minds. The convergence of human brilliance and technological possibility — <strong style="color:var(--bright)">Dec 27–29, IIT Bombay.</strong></p>
+  <div class="hero-cta" id="hero-cta">
+    <a href="#register" class="btn btn-c">Register Now</a>
+    <a href="#events" class="btn btn-o">Explore Events</a>
+  </div>
+  <div class="scroll-ind">
+    <span class="scroll-txt">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <b>///</b> Techfest 2025 · IIT Bombay · Dec 27–29 <b>///</b> Asia's Largest Sci-Tech Festival <b>///</b> 180+ Events <b>///</b> ₹1.2 Crore Prize Pool <b>///</b> 180,000 Participants <b>///</b> 2,000+ Colleges <b>///</b> 35+ Nations <b>///</b> Nobel Laureate Lectures <b>///</b> International Exhibitions <b>///</b> Robowars · DataStorm · Code Circuit <b>///</b> Techfest 2025 · IIT Bombay · Dec 27–29 <b>///</b> Asia's Largest Sci-Tech Festival <b>///</b> 180+ Events <b>///</b> ₹1.2 Crore Prize Pool <b>///</b> 180,000 Participants <b>///</b> 2,000+ Colleges <b>///</b> 35+ Nations <b>///</b> Nobel Laureate Lectures <b>///</b> International Exhibitions <b>///</b> Robowars · DataStorm · Code Circuit
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="section dark" id="about">
+  <div class="s-head rev">
+    <div class="s-num">01 — About</div>
+    <h2 class="s-title">Where Minds <span class="ac">Converge</span></h2>
+    <div class="s-line"></div>
+  </div>
+  <div class="about-grid rev">
+    <div class="about-text">
+      <p>Techfest is the annual Science & Technology festival of <strong>IIT Bombay</strong> — the most prestigious engineering institution in Asia. Since 1998, it has grown into a phenomenon that attracts the sharpest technical minds from across the world.</p>
+      <p>From combat robotics to quantum computing challenges, Nobel Prize lecture series to international drone racing — Techfest is where <strong>the impossible is engineered.</strong></p>
+      <p>This year marks the <strong>30th edition</strong> — the Neural Interface Edition. A celebration of human augmentation, artificial intelligence, and the beautiful collision between carbon and silicon.</p>
+      <a href="#events" class="btn btn-o" style="margin-top:1rem">View All Events</a>
+    </div>
+    <div>
+      <div class="about-stats">
+        <div class="a-stat"><div class="a-num" id="ac1">0</div><div class="a-lbl">Events & Competitions</div></div>
+        <div class="a-stat"><div class="a-num" id="ac2">0K</div><div class="a-lbl">Participants</div></div>
+        <div class="a-stat"><div class="a-num" id="ac3">0+</div><div class="a-lbl">Colleges</div></div>
+        <div class="a-stat"><div class="a-num" id="ac4">₹0Cr</div><div class="a-lbl">Prize Pool</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3D INTERACTIVE STAGE -->
+<div class="stage-wrap">
+  <canvas id="stage-canvas"></canvas>
+  <div class="stage-label">Interactive 3D · <span>Drag to rotate</span></div>
+  <div class="drag-hint">Drag &amp; Explore</div>
+</div>
+
+<!-- EVENTS -->
+<section class="section" id="events">
+  <div class="s-head rev">
+    <div class="s-num">02 — Events</div>
+    <h2 class="s-title">Competition <span class="ar">Matrix</span></h2>
+    <div class="s-line" style="background:linear-gradient(90deg,var(--r),transparent)"></div>
+  </div>
+  <div class="events-grid rev">
+    <div class="ev"><div class="ev-idx">EV·01</div><div class="ev-icon" style="color:var(--r)">⚔</div><div class="ev-tag tag-r">Robotics</div><div class="ev-name">Robowars</div><div class="ev-desc">Build a 15kg combat machine and fight for supremacy in the steel arena. Most electrifying event at Techfest.</div><div class="ev-foot"><span>Team: 2–4</span><span class="ev-prize">₹1,50,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·02</div><div class="ev-icon" style="color:var(--c)">⬡</div><div class="ev-tag tag-c">Software</div><div class="ev-name">Code Circuit</div><div class="ev-desc">48-hour competitive programming marathon. Algorithmic challenges at the edge of human cognition.</div><div class="ev-foot"><span>Solo / Duo</span><span class="ev-prize">₹80,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·03</div><div class="ev-icon" style="color:var(--g)">◈</div><div class="ev-tag tag-g">Innovation</div><div class="ev-name">Technoholics</div><div class="ev-desc">Prototype a solution to a real-world problem. Judged by industry leaders on feasibility and impact.</div><div class="ev-foot"><span>Team: 2–5</span><span class="ev-prize">₹1,00,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·04</div><div class="ev-icon" style="color:var(--c)">◉</div><div class="ev-tag tag-c">Autonomous</div><div class="ev-name">Line Follower</div><div class="ev-desc">Engineer a fully autonomous robot navigating complex mazes at speed. Precision engineering, zero error margin.</div><div class="ev-foot"><span>Team: 2–3</span><span class="ev-prize">₹60,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·05</div><div class="ev-icon" style="color:var(--gold)">◆</div><div class="ev-tag tag-gold">Business</div><div class="ev-name">Case Cracker</div><div class="ev-desc">Real corporate case studies. Present strategy to panels from top MNCs and global consulting firms.</div><div class="ev-foot"><span>Team: 2–4</span><span class="ev-prize">₹75,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·06</div><div class="ev-icon" style="color:var(--c)">⬟</div><div class="ev-tag tag-c">AI / ML</div><div class="ev-name">DataStorm</div><div class="ev-desc">24-hour machine learning sprint on an open dataset. Compete on accuracy, speed, and interpretability.</div><div class="ev-foot"><span>Team: 1–3</span><span class="ev-prize">₹90,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·07</div><div class="ev-icon" style="color:var(--r)">⬡</div><div class="ev-tag tag-r">Hardware</div><div class="ev-name">Electronics HK</div><div class="ev-desc">36-hour hardware hackathon — Arduino, ESP32, sensors, raw ingenuity. Build something that's never existed.</div><div class="ev-foot"><span>Team: 2–4</span><span class="ev-prize">₹70,000</span></div></div>
+    <div class="ev"><div class="ev-idx">EV·08</div><div class="ev-icon" style="color:var(--g)">◉</div><div class="ev-tag tag-g">Science</div><div class="ev-name">Science Quiz</div><div class="ev-desc">Multi-round buzzer quiz spanning physics, chemistry, bio, and engineering. Most prestigious quiz stage in India.</div><div class="ev-foot"><span>Team: 2</span><span class="ev-prize">₹40,000</span></div></div>
+  </div>
+</section>
+
+<!-- SCHEDULE TIMELINE -->
+<section class="section dark" id="schedule">
+  <div class="s-head rev">
+    <div class="s-num">03 — Schedule</div>
+    <h2 class="s-title">Event <span class="ac">Timeline</span></h2>
+    <div class="s-line"></div>
+  </div>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot on"></div><div class="tl-conn"></div><div class="tl-phase">Phase 01 · Now Open</div><div class="tl-title">Registration Portal Live</div><div class="tl-desc">Online registration is open for all events. Form teams, choose your competitions, and lock in your participation before slots fill up.</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-conn"></div><div class="tl-phase">Phase 02 · December</div><div class="tl-title">Online Qualifiers</div><div class="tl-desc">Selected events run online elimination rounds. Top performers across the country advance to the IIT Bombay campus finals.</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-conn"></div><div class="tl-phase">Phase 03 · Dec 27</div><div class="tl-title">Day 1 — Ignition</div><div class="tl-desc">Opening ceremony. Inaugural lecture series. Robowars Day 1. Workshop sessions begin. International exhibition opens.</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-conn"></div><div class="tl-phase">Phase 04 · Dec 28</div><div class="tl-title">Day 2 — Apex</div><div class="tl-desc">Main competition heats. Code Circuit 48-hour window. DataStorm sprint. Case Cracker presentations. Nobel Laureate lecture.</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-conn"></div><div class="tl-phase">Phase 05 · Dec 29</div><div class="tl-title">Day 3 — Singularity</div><div class="tl-desc">Grand finals across all events. Prize distribution. Closing ceremony. The night that belongs to the champions.</div></div>
+  </div>
+</section>
+
+<!-- REGISTER -->
+<section class="section" id="register">
+  <div class="reg-wrap">
+    <div class="reg-left rev">
+      <div class="s-num">04 — Register</div>
+      <h2><span>Initialize</span><br>Your Uplink</h2>
+      <p>Secure your spot at Asia's greatest technical festival. Fill in your details and we'll connect you with the full event guide, team formation support, and logistics for Techfest IIT Bombay 2025.</p>
+      <div class="info-blocks">
+        <div class="info-b">
+          <div class="info-b-title">Key Dates</div>
+          <ul>
+            <li>Fest Dates <span class="v">Dec 27–29, 2025</span></li>
+            <li>Venue <span class="v">IIT Bombay, Powai</span></li>
+            <li>Prize Pool <span class="vg">₹1.2 Crore</span></li>
+            <li>Participants <span class="v">180,000+</span></li>
+          </ul>
+        </div>
+        <div class="info-b">
+          <div class="info-b-title">Contact</div>
+          <ul>
+            <li>Website <span class="v">techfest.org</span></li>
+            <li>College <span class="v">DBIT, Mumbai</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="rev">
+      <form class="form" id="reg-form">
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="Your name" required></div>
+          <div class="f-group"><label class="f-label">Year *</label><select class="f-select" required><option value="" disabled selected>Select</option><option>FE</option><option>SE</option><option>TE</option><option>BE</option></select></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Branch *</label><select class="f-select" required><option value="" disabled selected>Select</option><option>Computer Engg</option><option>Electronics & TC</option><option>IT</option><option>Mechanical</option><option>Civil</option><option>AIML</option><option>Data Science</option></select></div>
+          <div class="f-group"><label class="f-label">Phone *</label><input type="tel" class="f-input" placeholder="+91 XXXXX XXXXX" required></div>
+        </div>
+        <div class="f-group"><label class="f-label">Email</label><input type="email" class="f-input" placeholder="you@example.com"></div>
+        <div class="f-group"><label class="f-label">Primary Event *</label><select class="f-select" required><option value="" disabled selected>Select event</option><option>Robowars</option><option>Code Circuit</option><option>Technoholics</option><option>Line Follower Pro</option><option>Case Cracker</option><option>Science Quiz</option><option>DataStorm</option><option>Electronics Hackathon</option><option>Multiple Events</option><option>Workshops Only</option></select></div>
+        <div class="f-group"><label class="f-label">Team Status</label><select class="f-select"><option value="" disabled selected>Do you have a team?</option><option>Yes, ready</option><option>Partial team</option><option>Need a team</option><option>Not sure</option></select></div>
+        <button type="submit" class="submit">▸ Submit Registration</button>
+      </form>
+      <div class="success" id="success">
+        <div class="si">◈</div>
+        <h3>Uplink Established</h3>
+        <p>Registration received · You'll be contacted within 24 hours · Welcome to Techfest 2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">TECH<span>FEST</span> · IITB</div>
+  <ul class="f-links">
+    <li><a href="https://techfest.org" target="_blank">techfest.org</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#register">Register</a></li>
+  </ul>
+  <div class="f-copy">© 2025 Techfest · IIT Bombay · DBIT Mumbai</div>
+</footer>
+
+</div><!-- end #content -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ─── CURSOR ─── */
+const cur=document.getElementById('cur'),dot=document.getElementById('dot');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+function animCursor(){cx+=(mx-cx)*.12;cy+=(my-cy)*.12;cur.style.left=cx+'px';cur.style.top=cy+'px';requestAnimationFrame(animCursor);}
+animCursor();
+document.querySelectorAll('a,button,input,select,.ev,.btn').forEach(el=>{el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));});
+
+/* ─── BACKGROUND PARTICLE FIELD ─── */
+(function(){
+  const canvas=document.getElementById('bg');
+  const gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+  if(!gl){return;}
+  let W,H;
+  function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;gl.viewport(0,0,W,H);}
+  window.addEventListener('resize',resize);resize();
+
+  const vsrc=`attribute vec2 pos;attribute float size;attribute float alpha;varying float va;void main(){va=alpha;gl_Position=vec4(pos,0,1);gl_PointSize=size;}`;
+  const fsrc=`precision mediump float;varying float va;void main(){float d=length(gl_PointCoord-.5)*2.;float a=smoothstep(1.,0.3,d)*va;gl_FragColor=vec4(0.,0.9,1.,a);}`;
+  function mkShader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mkShader(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog,mkShader(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+
+  const N=300;
+  const pos=new Float32Array(N*2),sizes=new Float32Array(N),alphas=new Float32Array(N);
+  const vel=new Float32Array(N*2);
+  for(let i=0;i<N;i++){pos[i*2]=Math.random()*2-1;pos[i*2+1]=Math.random()*2-1;vel[i*2]=(Math.random()-.5)*.0008;vel[i*2+1]=(Math.random()-.5)*.0008;sizes[i]=Math.random()*2+.5;alphas[i]=Math.random()*.4+.1;}
+
+  const posBuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,posBuf);
+  const sizeBuf=gl.createBuffer();
+  const alphaBuf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,sizeBuf);gl.bufferData(gl.ARRAY_BUFFER,sizes,gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER,alphaBuf);gl.bufferData(gl.ARRAY_BUFFER,alphas,gl.STATIC_DRAW);
+
+  const aPos=gl.getAttribLocation(prog,'pos');
+  const aSize=gl.getAttribLocation(prog,'size');
+  const aAlpha=gl.getAttribLocation(prog,'alpha');
+
+  gl.bindBuffer(gl.ARRAY_BUFFER,sizeBuf);gl.enableVertexAttribArray(aSize);gl.vertexAttribPointer(aSize,1,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,alphaBuf);gl.enableVertexAttribArray(aAlpha);gl.vertexAttribPointer(aAlpha,1,gl.FLOAT,false,0,0);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+
+  function frame(){
+    gl.clearColor(0.008,0.024,0.039,1);gl.clear(gl.COLOR_BUFFER_BIT);
+    for(let i=0;i<N;i++){pos[i*2]+=vel[i*2];pos[i*2+1]+=vel[i*2+1];if(pos[i*2]>1||pos[i*2]<-1)vel[i*2]*=-1;if(pos[i*2+1]>1||pos[i*2+1]<-1)vel[i*2+1]*=-1;}
+    gl.bindBuffer(gl.ARRAY_BUFFER,posBuf);gl.bufferData(gl.ARRAY_BUFFER,pos,gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(aPos);gl.vertexAttribPointer(aPos,2,gl.FLOAT,false,0,0);
+    gl.drawArrays(gl.POINTS,0,N);
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ─── HERO PARALLAX ─── */
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  const t=document.getElementById('hero-title');
+  const s=document.getElementById('hero-sub');
+  const c=document.getElementById('hero-cta');
+  if(t){t.style.transform=`translateY(${y*.3}px)`;t.style.opacity=1-y/500;}
+  if(s){s.style.transform=`translateY(${y*.2}px)`;s.style.opacity=1-y/400;}
+  if(c){c.style.transform=`translateY(${y*.15}px)`;c.style.opacity=1-y/350;}
+});
+
+/* ─── 3D INTERACTIVE STAGE (Three.js) ─── */
+(function(){
+  const canvas=document.getElementById('stage-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0x000000,0);
+
+  function resize(){
+    const w=canvas.parentElement.clientWidth;
+    const h=canvas.parentElement.clientHeight;
+    renderer.setSize(w,h);
+    camera.aspect=w/h;camera.updateProjectionMatrix();
+  }
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,2,0.1,100);
+  camera.position.set(0,1.5,5);camera.lookAt(0,0,0);
+
+  /* LIGHTING */
+  scene.add(new THREE.AmbientLight(0x001a2e,2));
+  const pL1=new THREE.PointLight(0x00f0ff,3,8);pL1.position.set(2,2,2);scene.add(pL1);
+  const pL2=new THREE.PointLight(0xff2050,2,8);pL2.position.set(-2,-1,1);scene.add(pL2);
+  const pL3=new THREE.PointLight(0x00ff88,1.5,6);pL3.position.set(0,3,-2);scene.add(pL3);
+
+  /* GRID FLOOR */
+  const grid=new THREE.GridHelper(20,30,0x001a24,0x001a24);
+  grid.position.y=-1.5;scene.add(grid);
+
+  /* CENTRAL TORUS KNOT */
+  const tkGeo=new THREE.TorusKnotGeometry(1,0.28,128,16,2,3);
+  const tkMat=new THREE.MeshStandardMaterial({color:0x003040,emissive:0x001820,wireframe:false,metalness:.9,roughness:.1});
+  const tk=new THREE.Mesh(tkGeo,tkMat);
+  scene.add(tk);
+
+  /* WIREFRAME OVERLAY */
+  const tkWire=new THREE.Mesh(tkGeo,new THREE.MeshBasicMaterial({color:0x00f0ff,wireframe:true,transparent:true,opacity:.15}));
+  scene.add(tkWire);
+
+  /* ORBITING RINGS */
+  function makeRing(r,tube,color,rx,ry,rz){
+    const g=new THREE.TorusGeometry(r,tube,8,60);
+    const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.5});
+    const mesh=new THREE.Mesh(g,m);
+    mesh.rotation.set(rx,ry,rz);
+    scene.add(mesh);return mesh;
+  }
+  const ring1=makeRing(2,.01,0x00f0ff,Math.PI/2,0,0);
+  const ring2=makeRing(2.4,.008,0xff2050,Math.PI/4,Math.PI/6,0);
+  const ring3=makeRing(1.8,.006,0x00ff88,0,Math.PI/3,Math.PI/4);
+
+  /* FLOATING PARTICLES AROUND CENTER */
+  const partCount=120;
+  const partGeo=new THREE.BufferGeometry();
+  const partPos=new Float32Array(partCount*3);
+  const partSpeeds=[];
+  for(let i=0;i<partCount;i++){
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.random()*Math.PI;
+    const r=2.5+Math.random()*1.5;
+    partPos[i*3]=r*Math.sin(phi)*Math.cos(theta);
+    partPos[i*3+1]=r*Math.sin(phi)*Math.sin(theta);
+    partPos[i*3+2]=r*Math.cos(phi);
+    partSpeeds.push((Math.random()-.5)*.015,(Math.random()-.5)*.015,(Math.random()-.5)*.015);
+  }
+  partGeo.setAttribute('position',new THREE.BufferAttribute(partPos,3));
+  const partMat=new THREE.PointsMaterial({color:0x00f0ff,size:.04,transparent:true,opacity:.7});
+  const parts=new THREE.Points(partGeo,partMat);
+  scene.add(parts);
+
+  /* SATELLITE CUBES */
+  function makeSatellite(x,y,z,color){
+    const g=new THREE.BoxGeometry(.2,.2,.2);
+    const m=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.5,metalness:.8,roughness:.2});
+    const mesh=new THREE.Mesh(g,m);
+    mesh.position.set(x,y,z);
+    scene.add(mesh);return mesh;
+  }
+  const sats=[
+    makeSatellite(2.2,.5,0,0x00f0ff),
+    makeSatellite(-2,-.3,.5,0xff2050),
+    makeSatellite(.5,2.1,-.8,0x00ff88),
+    makeSatellite(-.8,-1.8,.3,0xffbe00),
+  ];
+
+  /* MOUSE DRAG */
+  let isDragging=false,prevMouse={x:0,y:0},autoRot=true;
+  let rotX=0,rotY=0,targetX=0,targetY=0;
+  canvas.addEventListener('mousedown',e=>{isDragging=true;autoRot=false;prevMouse={x:e.clientX,y:e.clientY};});
+  window.addEventListener('mousemove',e=>{
+    if(isDragging){targetY+=(e.clientX-prevMouse.x)*.008;targetX+=(e.clientY-prevMouse.y)*.008;prevMouse={x:e.clientX,y:e.clientY};}
+  });
+  window.addEventListener('mouseup',()=>{isDragging=false;setTimeout(()=>{autoRot=true;},3000);});
+
+  /* TOUCH */
+  let lastTouch=null;
+  canvas.addEventListener('touchstart',e=>{lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};autoRot=false;});
+  canvas.addEventListener('touchmove',e=>{
+    if(lastTouch){targetY+=(e.touches[0].clientX-lastTouch.x)*.008;targetX+=(e.touches[0].clientY-lastTouch.y)*.008;lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};}
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('touchend',()=>{setTimeout(()=>{autoRot=true;},3000);});
+
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t+=.01;
+
+    if(autoRot)targetY+=.004;
+    rotX+=(targetX-rotX)*.06;
+    rotY+=(targetY-rotY)*.06;
+
+    tk.rotation.x=rotX;tk.rotation.y=rotY;
+    tkWire.rotation.x=rotX+t*.2;tkWire.rotation.y=rotY+t*.1;
+
+    ring1.rotation.z=t*.3;
+    ring2.rotation.y=t*.2;ring2.rotation.z=t*.15;
+    ring3.rotation.x=t*.25;ring3.rotation.y=t*.1;
+
+    sats.forEach((s,i)=>{
+      const a=t*.4+i*(Math.PI/2);
+      const r=2.2+Math.sin(t+i)*0.2;
+      s.position.x=Math.cos(a)*r;
+      s.position.z=Math.sin(a)*r;
+      s.position.y=Math.sin(t*.7+i)*0.8;
+      s.rotation.x=t;s.rotation.y=t*.7;
+    });
+
+    // pulse point light
+    pL1.intensity=2+Math.sin(t*2)*.8;
+    pL2.intensity=1.5+Math.cos(t*1.5)*.6;
+
+    // particle drift
+    for(let i=0;i<partCount;i++){
+      partPos[i*3]+=partSpeeds[i*3];
+      partPos[i*3+1]+=partSpeeds[i*3+1];
+      partPos[i*3+2]+=partSpeeds[i*3+2];
+      const d=Math.sqrt(partPos[i*3]**2+partPos[i*3+1]**2+partPos[i*3+2]**2);
+      if(d>4.5||d<2){partSpeeds[i*3]*=-1;partSpeeds[i*3+1]*=-1;partSpeeds[i*3+2]*=-1;}
+    }
+    partGeo.attributes.position.needsUpdate=true;
+    parts.rotation.y=t*.03;
+
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',resize);resize();
+})();
+
+/* ─── SCROLL REVEAL ─── */
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');revObs.unobserve(e.target);}});
+},{threshold:.1});
+document.querySelectorAll('.rev').forEach(el=>revObs.observe(el));
+
+/* ─── TIMELINE REVEAL ─── */
+const tlObs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),i*150);tlObs.unobserve(e.target);}});
+},{threshold:.15});
+document.querySelectorAll('.tl-item').forEach(el=>tlObs.observe(el));
+
+/* ─── STAT COUNTERS ─── */
+function cnt(id,target,suffix,dur,prefix=''){
+  const el=document.getElementById(id);if(!el)return;
+  let v=0;const step=target/(dur/16);
+  const ti=setInterval(()=>{v+=step;if(v>=target){v=target;clearInterval(ti);}
+    el.textContent=prefix+Math.floor(v)+suffix;},16);
+}
+const statsObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){
+    cnt('ac1',180,'+',1800);cnt('ac2',180,'K',2000);cnt('ac3',2000,'+',2200);
+    let v=0;const el=document.getElementById('ac4');
+    const ti=setInterval(()=>{v+=.04;if(v>=1.2){v=1.2;clearInterval(ti);}el.textContent='₹'+v.toFixed(1)+'Cr';},40);
+    statsObs.unobserve(e.target);
+  }});
+},{threshold:.3});
+const statsEl=document.querySelector('.about-stats');
+if(statsEl)statsObs.observe(statsEl);
+
+/* ─── FORM ─── */
+document.getElementById('reg-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  document.getElementById('reg-form').style.display='none';
+  document.getElementById('success').style.display='block';
+});
+</script>
+</body>
+</html>
